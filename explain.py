@@ -85,7 +85,7 @@ def load_model():
 if __name__ == '__main__':
 	#Hyper parameters.
 	#TBD: Use argparse
-	tv_beta = 3
+	tv_beta = 2
 	learning_rate = 0.1
 	max_iterations = 500
 	l1_coeff = 0.01
