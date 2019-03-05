@@ -91,7 +91,7 @@ if __name__ == '__main__':
 	l1_coeff = 0.01
 	tv_coeff = 0.2
 
-	img_path = "refimg/imagenet/flute.jpg"
+	img_path = "refimg/imagenet/beer.jpg"
 
 	model = load_model()
 	original_img = cv2.imread(img_path, 1)
