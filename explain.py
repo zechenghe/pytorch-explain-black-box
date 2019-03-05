@@ -42,13 +42,13 @@ def save(mask, img, blurred):
 	mask = (mask - np.min(mask)) / np.max(mask)
 	mask = 1 - mask
 	heatmap = cv2.applyColorMap(np.uint8(255*mask), cv2.COLORMAP_JET)
-	
+
 	heatmap = np.float32(heatmap) / 255
 	cam = 1.0*heatmap + np.float32(img)/255
 	cam = cam / np.max(cam)
 
 	img = np.float32(img) / 255
-	perturbated = np.multiply(1 - mask, img) + np.multiply(mask, blurred)	
+	perturbated = np.multiply(1 - mask, img) + np.multiply(mask, blurred)
 
 	cv2.imwrite("perturbated.png", np.uint8(255*perturbated))
 	cv2.imwrite("heatmap.png", np.uint8(255*heatmap))
@@ -74,7 +74,7 @@ def load_model():
 	model.eval()
 	if use_cuda:
 		model.cuda()
-	
+
 	for p in model.features.parameters():
 		p.requires_grad = False
  	for p in model.classifier.parameters():
@@ -83,13 +83,15 @@ def load_model():
 	return model
 
 if __name__ == '__main__':
-	#Hyper parameters. 
+	#Hyper parameters.
 	#TBD: Use argparse
 	tv_beta = 3
 	learning_rate = 0.1
 	max_iterations = 500
 	l1_coeff = 0.01
 	tv_coeff = 0.2
+
+	img_path = "refimg/imagenet/flute.jpg"
 
 	model = load_model()
 	original_img = cv2.imread(sys.argv[1], 1)
@@ -99,7 +101,7 @@ if __name__ == '__main__':
 	blurred_img2 = np.float32(cv2.medianBlur(original_img, 11))/255
 	blurred_img_numpy = (blurred_img1 + blurred_img2) / 2
 	mask_init = np.ones((28, 28), dtype = np.float32)
-	
+
 	# Convert to torch variables
 	img = preprocess_image(img)
 	blurred_img = preprocess_image(blurred_img2)
@@ -118,21 +120,21 @@ if __name__ == '__main__':
 
 	for i in range(max_iterations):
 		upsampled_mask = upsample(mask)
-		# The single channel mask is used with an RGB image, 
+		# The single channel mask is used with an RGB image,
 		# so the mask is duplicated to have 3 channel,
 		upsampled_mask = \
 			upsampled_mask.expand(1, 3, upsampled_mask.size(2), \
 										upsampled_mask.size(3))
-		
+
 		# Use the mask to perturbated the input image.
 		perturbated_input = img.mul(upsampled_mask) + \
 							blurred_img.mul(1-upsampled_mask)
-		
+
 		noise = np.zeros((224, 224, 3), dtype = np.float32)
 		cv2.randn(noise, 0, 0.2)
 		noise = numpy_to_torch(noise)
 		perturbated_input = perturbated_input + noise
-		
+
 		outputs = torch.nn.Softmax()(model(perturbated_input))
 		loss = l1_coeff*torch.mean(torch.abs(1 - mask)) + \
 				tv_coeff*tv_norm(mask, tv_beta) + outputs[0, category]
