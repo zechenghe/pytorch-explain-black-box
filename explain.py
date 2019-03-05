@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	img_path = "refimg/imagenet/flute.jpg"
 
 	model = load_model()
-	original_img = cv2.imread(sys.argv[1], 1)
+	original_img = cv2.imread(img_path, 1)
 	original_img = cv2.resize(original_img, (224, 224))
 	img = np.float32(original_img) / 255
 	blurred_img1 = cv2.GaussianBlur(img, (11, 11), 5)
