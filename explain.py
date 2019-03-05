@@ -70,7 +70,7 @@ def numpy_to_torch(img, requires_grad = True):
 	return v
 
 def load_model():
-	model = models.alexnet(pretrained=True)
+	model = models.vgg19(pretrained=True)
 	model.eval()
 	if use_cuda:
 		model.cuda()
